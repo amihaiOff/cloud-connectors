@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Optional, Union
 
 import pandas as pd
 import gspread
@@ -17,7 +17,6 @@ def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
     :param start_cell: str - The top-left cell where the data will start.
     """
     # Set up Google Sheets API client
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     client = gspread.service_account(filename='/Users/amihaio/.config/gspread/gg-data-connector-8171c002937a.json')
     sheet = client.open(sheet_name)
 
@@ -52,6 +51,45 @@ def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
         print(f"Data uploaded successfully to Google Sheet '{sheet_name}' in tab '{tab_name}'.")
     else:
         print("Failed to upload data to Google Sheet.")
+
+
+def read_from_google_sheets(sheet_name: str,
+                            tab_name: str,
+                            start_cell: Optional[int] = None,
+                            num_rows: Optional[int] = None,
+                            num_cols: Optional[int] = None):
+    """
+    Reads data from a specified Google Sheet.
+
+    :param sheet_name: str - Name of the Google Sheet.
+    :param tab_name: str - Name of the tab within the Google Sheet.
+    :param start_cell: str - The top-left cell where the data starts.
+    :param num_rows: int - Number of rows to read.
+    :param num_cols: int - Number of columns to read.
+    :return: pd.DataFrame - Data read from the Google Sheet.
+    """
+    # Set up Google Sheets API client
+    client = gspread.service_account(filename='/Users/amihaio/.config/gspread/gg-data-connector-8171c002937a.json')
+    sheet = client.open(sheet_name)
+
+    # Select the tab
+    try:
+        worksheet = sheet.worksheet(tab_name)
+    except gspread.exceptions.WorksheetNotFound as e:
+        raise ValueError(
+            f"Tab '{tab_name}' not found in Google Sheet '{sheet_name}'."
+        ) from e
+
+    # Read data from the worksheet
+    data = worksheet.get_all_values()
+
+    # Convert data to a DataFrame
+    df = pd.DataFrame(data[1:], columns=data[0])
+
+    if start_cell and num_rows and num_cols:
+        df = df.iloc[start_cell:start_cell + num_rows, start_cell:start_cell + num_cols]
+
+    return df
 
 
 if __name__ == "__main__":
