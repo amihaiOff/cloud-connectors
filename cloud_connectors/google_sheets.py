@@ -1,3 +1,4 @@
+from functools import lru_cache
 from typing import Optional, Union
 
 import pandas as pd
@@ -7,7 +8,8 @@ import gspread
 def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
                             sheet_name: str,
                             tab_name: str,
-                            start_cell: str):
+                            start_cell: str,
+                            drop_headers: Optional[bool] = True):
     """
     Uploads data to a specified Google Sheet.
 
@@ -15,6 +17,7 @@ def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
     :param sheet_name: str - Name of the Google Sheet.
     :param tab_name: str - Name of the tab within the Google Sheet.
     :param start_cell: str - The top-left cell where the data will start.
+    :param drop_headers: bool - Whether to drop the headers from the DataFrame.
     """
     # Set up Google Sheets API client
     client = gspread.service_account(filename='/Users/amihaio/.config/gspread/gg-data-connector-8171c002937a.json')
@@ -33,7 +36,8 @@ def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
     else:
         raise ValueError("Invalid input_data type. Please provide a file path or a pandas DataFrame.")
 
-    # Select the tab
+    data = data.fillna("")
+
     try:
         worksheet = sheet.worksheet(tab_name)
     except gspread.exceptions.WorksheetNotFound as e:
@@ -43,6 +47,8 @@ def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
 
     # Convert DataFrame to list of lists
     data_list = [data.columns.values.tolist()] + data.values.tolist()
+    if drop_headers:
+        data_list = data_list[1:]
 
     # Update the worksheet with data
     res = worksheet.update(data_list, start_cell)
