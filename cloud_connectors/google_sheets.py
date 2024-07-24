@@ -1,8 +1,10 @@
-from functools import lru_cache
 from typing import Optional, Union
+import os
 
 import pandas as pd
 import gspread
+
+CREDS_PATH = os.environ.get('credentials_path')
 
 
 def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
@@ -20,7 +22,7 @@ def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
     :param drop_headers: bool - Whether to drop the headers from the DataFrame.
     """
     # Set up Google Sheets API client
-    client = gspread.service_account(filename='/Users/amihaio/.config/gspread/gg-data-connector-8171c002937a.json')
+    client = gspread.service_account(filename=CREDS_PATH)
     sheet = client.open(sheet_name)
 
     # Load data
@@ -75,7 +77,7 @@ def read_from_google_sheets(sheet_name: str,
     :return: pd.DataFrame - Data read from the Google Sheet.
     """
     # Set up Google Sheets API client
-    client = gspread.service_account(filename='/Users/amihaio/.config/gspread/gg-data-connector-8171c002937a.json')
+    client = gspread.service_account(filename=CREDS_PATH)
     sheet = client.open(sheet_name)
 
     # Select the tab

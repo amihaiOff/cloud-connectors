@@ -30,7 +30,7 @@ class TransTableCols:
 
 
 SHEETNAME = 'FinHub'
-TABNAME = 'Transactions'
+TABNAME = 'TransactionsDB'
 
 
 def _apply_transactions_table_dtypes(data: pd.DataFrame):
@@ -51,10 +51,10 @@ def read_transactions_table(start_date: Optional[str] = None, end_date: Optional
     return data
 
 
-def upload_to_transactions_table(data: pd.DataFrame, year_month: str):
+def upload_to_transactions_table(new_trans: pd.DataFrame, year_month: str):
     """
     Upload transactions to transaction table for a given month
-    :param data:
+    :param new_trans:
     :param year_month: format: 'YYYY_MM'
     :return:
     """
@@ -64,7 +64,7 @@ def upload_to_transactions_table(data: pd.DataFrame, year_month: str):
     cond1 = all_transactions[TransTableCols.DATE] >= pd.to_datetime(f'{year_month}-01')
     cond2 = all_transactions[TransTableCols.DATE] <= pd.to_datetime(f'{year_month}-{days_in_given_month}')
     curr_month_trans = all_transactions[cond1 & cond2]
-    curr_month_trans = pd.concat([curr_month_trans, data], ignore_index=True)
+    curr_month_trans = pd.concat([curr_month_trans, new_trans], ignore_index=True)
     curr_month_trans = curr_month_trans.drop_duplicates(subset=[TransTableCols.ID], keep=False)
 
     if not curr_month_trans.empty:
