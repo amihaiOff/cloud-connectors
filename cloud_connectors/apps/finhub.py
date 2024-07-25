@@ -2,7 +2,7 @@ from typing import Optional
 
 import pandas as pd
 
-from cloud_connectors.google_sheets import read_from_google_sheets, upload_to_google_sheets
+from cloud_connectors.connectors.google_sheets import read_from_google_sheets, upload_to_google_sheets
 
 
 def days_in_month(year, month):
