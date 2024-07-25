@@ -55,7 +55,7 @@ def upload_to_transactions_table(new_trans: pd.DataFrame, year_month: str):
     """
     Upload transactions to transaction table for a given month
     :param new_trans:
-    :param year_month: format: 'YYYY_MM'
+    :param year_month: format: 'YYYY-MM'
     :return:
     """
     days_in_given_month = days_in_month(int(year_month.split('-')[0]),
