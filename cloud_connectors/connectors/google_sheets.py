@@ -1,10 +1,13 @@
 from typing import Optional, Union
 import os
+from logging import getLogger
 
 import pandas as pd
 import gspread
 
 CREDS_PATH = os.environ.get('credentials_path')
+
+LOGGER = getLogger(__name__)
 
 
 def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
@@ -24,6 +27,7 @@ def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
     # Set up Google Sheets API client
     client = gspread.service_account(filename=CREDS_PATH)
     sheet = client.open(sheet_name)
+    LOGGER.info(f"Connected to Google Sheet '{sheet_name}'.")
 
     # Load data
     if isinstance(input_data, str):
@@ -42,6 +46,7 @@ def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
 
     try:
         worksheet = sheet.worksheet(tab_name)
+        LOGGER.info(f"Connected to tab '{tab_name}'.")
     except gspread.exceptions.WorksheetNotFound as e:
         raise ValueError(
             f"Tab '{tab_name}' not found in Google Sheet '{sheet_name}'."
@@ -54,6 +59,7 @@ def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
 
     # Update the worksheet with data
     res = worksheet.update(data_list, start_cell)
+    LOGGER.info(f"Uploaded data to Google Sheet '{sheet_name}' in tab '{tab_name}'.")
 
     if res['updatedCells'] == len(data_list) * len(data_list[0]):
         print(f"Data uploaded successfully to Google Sheet '{sheet_name}' in tab '{tab_name}'.")
