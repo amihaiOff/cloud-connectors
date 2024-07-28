@@ -80,6 +80,8 @@ def upload_to_transactions_table(new_trans: pd.DataFrame, year_month: str):
     LOGGER.debug(f'Length of current month transactions before dedup: {len(curr_month_trans)}')
     curr_month_trans = curr_month_trans.drop_duplicates(subset=[TransTableCols.ID], keep=False)
     LOGGER.debug(f'Length of current month transactions after dedup: {len(curr_month_trans)}')
+    curr_month_trans[TransTableCols.TRANSACTION_DATE] = curr_month_trans[TransTableCols.TRANSACTION_DATE].astype(str)
+    curr_month_trans[TransTableCols.BILLING_DATE] = curr_month_trans[TransTableCols.BILLING_DATE].astype(str)
 
     if not curr_month_trans.empty:
         LOGGER.debug(f"Uploading {len(curr_month_trans)} transactions to transactions table.")
