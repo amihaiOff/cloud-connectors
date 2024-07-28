@@ -1,12 +1,14 @@
 from typing import Optional
-from logging import getLogger
+import logging
 
 import pandas as pd
 
 from cloud_connectors.connectors.google_sheets import read_from_google_sheets, upload_to_google_sheets
 
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-LOGGER = getLogger(__name__)
+LOGGER = logging.getLogger(__name__)
 
 
 def days_in_month(year, month):
@@ -65,17 +67,17 @@ def upload_to_transactions_table(new_trans: pd.DataFrame, year_month: str):
     days_in_given_month = days_in_month(int(year_month.split('-')[0]),
                                         int(year_month.split('-')[1]))
     all_transactions = read_transactions_table()
-    LOGGER.info(f"Read {len(all_transactions)} transactions from transactions table.")
+    LOGGER.debug(f"Read {len(all_transactions)} transactions from transactions table.")
     cond1 = all_transactions[TransTableCols.DATE] >= pd.to_datetime(f'{year_month}-01')
     cond2 = all_transactions[TransTableCols.DATE] <= pd.to_datetime(f'{year_month}-{days_in_given_month}')
     curr_month_trans = all_transactions[cond1 & cond2]
     curr_month_trans = pd.concat([curr_month_trans, new_trans], ignore_index=True)
-    LOGGER.info(f'Length of current month transactions before dedup: {len(curr_month_trans)}')
+    LOGGER.debug(f'Length of current month transactions before dedup: {len(curr_month_trans)}')
     curr_month_trans = curr_month_trans.drop_duplicates(subset=[TransTableCols.ID], keep=False)
-    LOGGER.info(f'Length of current month transactions after dedup: {len(curr_month_trans)}')
+    LOGGER.debug(f'Length of current month transactions after dedup: {len(curr_month_trans)}')
 
     if not curr_month_trans.empty:
-        LOGGER.info(f"Uploading {len(curr_month_trans)} transactions to transactions table.")
+        LOGGER.debug(f"Uploading {len(curr_month_trans)} transactions to transactions table.")
         upload_to_google_sheets(curr_month_trans, SHEETNAME, TABNAME, f"A{len(all_transactions) + 2}")
 
 
