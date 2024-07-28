@@ -27,11 +27,15 @@ def days_in_month(year, month):
 
 
 class TransTableCols:
-    DATE = 'Date'
-    PAYEE = 'Payee'
-    AMOUNT = 'Amount'
-    CATEGORY = 'Category'
-    ACCOUNT = 'Account'
+    TRANSACTION_DATE = 'transaction date'
+    BILLING_DATE = 'billing date'
+    ORIGNAL_CURRENCY = 'original currency'
+    EXCHANGE_RATE = 'exchange rate'
+    PAYEE = 'payee'
+    AMOUNT = 'amount'
+    MEMO = 'memo'
+    CATEGORY = 'category'
+    ACCOUNT = 'account'
     ID = 'id'
 
 
@@ -40,7 +44,8 @@ TABNAME = 'TransactionsDB'
 
 
 def _apply_transactions_table_dtypes(data: pd.DataFrame):
-    data[TransTableCols.DATE] = pd.to_datetime(data[TransTableCols.DATE])
+    data[TransTableCols.TRANSACTION_DATE] = pd.to_datetime(data[TransTableCols.TRANSACTION_DATE])
+    data[TransTableCols.BILLING_DATE] = pd.to_datetime(data[TransTableCols.BILLING_DATE])
     data[TransTableCols.AMOUNT] = pd.to_numeric(data[TransTableCols.AMOUNT])
     data[TransTableCols.ID] = data[TransTableCols.ID].astype(str)
     data[TransTableCols.PAYEE] = data[TransTableCols.PAYEE].astype(str)
@@ -49,11 +54,11 @@ def _apply_transactions_table_dtypes(data: pd.DataFrame):
 
 def read_transactions_table(start_date: Optional[str] = None, end_date: Optional[str] = None):
     data = read_from_google_sheets(SHEETNAME, TABNAME)
-    data[TransTableCols.DATE] = pd.to_datetime(data[TransTableCols.DATE])
+    data[TransTableCols.TRANSACTION_DATE] = pd.to_datetime(data[TransTableCols.TRANSACTION_DATE])
     if start_date:
-        data = data[data[TransTableCols.DATE] >= pd.to_datetime(start_date)]
+        data = data[data[TransTableCols.TRANSACTION_DATE] >= pd.to_datetime(start_date)]
     if end_date:
-        data = data[data[TransTableCols.DATE] <= pd.to_datetime(end_date)]
+        data = data[data[TransTableCols.TRANSACTION_DATE] <= pd.to_datetime(end_date)]
     return data
 
 
@@ -68,8 +73,8 @@ def upload_to_transactions_table(new_trans: pd.DataFrame, year_month: str):
                                         int(year_month.split('-')[1]))
     all_transactions = read_transactions_table()
     LOGGER.debug(f"Read {len(all_transactions)} transactions from transactions table.")
-    cond1 = all_transactions[TransTableCols.DATE] >= pd.to_datetime(f'{year_month}-01')
-    cond2 = all_transactions[TransTableCols.DATE] <= pd.to_datetime(f'{year_month}-{days_in_given_month}')
+    cond1 = all_transactions[TransTableCols.TRANSACTION_DATE] >= pd.to_datetime(f'{year_month}-01')
+    cond2 = all_transactions[TransTableCols.TRANSACTION_DATE] <= pd.to_datetime(f'{year_month}-{days_in_given_month}')
     curr_month_trans = all_transactions[cond1 & cond2]
     curr_month_trans = pd.concat([curr_month_trans, new_trans], ignore_index=True)
     LOGGER.debug(f'Length of current month transactions before dedup: {len(curr_month_trans)}')
