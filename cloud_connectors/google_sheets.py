@@ -61,7 +61,7 @@ def upload_to_google_sheets(input_data: Union[str, pd.DataFrame],
         data_list = data_list[1:]
 
     # Update the worksheet with data
-    res = worksheet.update(data_list, start_cell, value_input_option=ValueInputOption.RAW)
+    res = worksheet.update(data_list, start_cell, value_input_option=ValueInputOption.user_entered)
     LOGGER.debug(f"Uploaded data to Google Sheet '{sheet_name}' in tab '{tab_name}'.")
 
     if res['updatedCells'] == len(data_list) * len(data_list[0]):
